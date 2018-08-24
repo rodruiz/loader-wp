@@ -1,0 +1,32 @@
+{
+  "name": "mg2-loader-wp",
+  "version": "1.0.0",
+  "description": "Allows configuration and use of the MG2 loader for WordPress sites.",
+  "private": true,
+  "directories": {
+    "test": "tests/js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server --mode=development --env.NODE_ENV=development",
+    "build": "webpack --mode=production --env.NODE_ENV=production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marketingg2/loader-wp.git"
+  },
+  "keywords": [
+    "MG2",
+    "Connext"
+  ],
+  "author": "Alley Interactive",
+  "bugs": {
+    "url": "https://github.com/marketingg2/loader-wp/issues"
+  },
+  "homepage": "https://github.com/marketingg2/loader-wp#readme",
+  "devDependencies": {
+    "webpack": "4.16.1",
+    "webpack-cli": "3.1.0",
+    "webpack-dev-server": "3.1.4"
+  }
+}
