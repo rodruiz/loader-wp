@@ -59,6 +59,40 @@ class Main {
 		$this->name = 'mg2_loader';
 
 		/**
+		 * Setting up Flittz layout fields for reuse.
+		 */
+		$fz_layout_fields = array(
+			'type' => array(
+				'label' => __( 'Type', 'mg2_loader' ),
+				'type' => 'select',
+				'options' => array(
+					'modal' => __( 'Modal', 'mg2_loader' ),
+					'panel' => __( 'Panel', 'mg2_loader' ),
+					'inline' => __( 'Inline', 'mg2_loader' ),
+				),
+			),
+			'options' => array(
+				'label' => __( 'Options', 'mg2_loader' ),
+				'type' => 'group',
+				'fields' => array(
+					'addMethod' => array(
+						'label' => __( 'Add Method', 'mg2_loader' ),
+						'type' => 'select',
+						'options' => array(
+							'append' => __( 'Append', 'mg2_loader' ),
+							'prepend' => __( 'Prepend', 'mg2_loader' ),
+							'before' => __( 'Before', 'mg2_loader' ),
+							'after' => __( 'After', 'mg2_loader' ),
+						),
+					),
+					'container' => array(
+						'label' => __( 'Container', 'mg2_loader' ),
+					),
+				),
+			),
+		);
+
+		/**
 		 * Set up the settings page.
 		 */
 		$this->settings = new Settings(
@@ -108,6 +142,7 @@ class Main {
 							'options' => array(
 								'NXT' => __( 'Connext', 'mg2_loader' ),
 								'FP' => __( 'Fingerprint', 'mg2_loader' ),
+								'FZ' => __( 'Flittz', 'mg2_loader' ),
 								'DL' => __( 'G2 Insights', 'mg2_loader' ),
 							),
 						),
@@ -193,6 +228,118 @@ class Main {
 							'options' => array(
 								'prod' => __( 'Production', 'mg2_loader' ),
 								'stage' => __( 'Staging', 'mg2_loader' ),
+							),
+						),
+					),
+				),
+				'FZ' => array(
+					'name' => __( 'Flittz Settings', 'mg2_loader' ),
+					'fields' => array(
+						'required' => array(
+							'label' => __( 'Required', 'mg2_loader' ),
+							'type' => 'boolean',
+							'options' => array(
+								'false' => __( 'False', 'mg2_loader' ),
+								'true' => __( 'True', 'mg2_loader' ),
+							),
+						),
+						'version' => array(
+							'label' => __( 'Version', 'mg2_loader' ),
+							'required' => true,
+						),
+						'environment' => array(
+							'label' => __( 'Environment', 'mg2_loader' ),
+							'type' => 'select',
+							'options' => array(
+								'prod' => __( 'Production', 'mg2_loader' ),
+								'stage' => __( 'Staging', 'mg2_loader' ),
+							),
+						),
+						'logLevel' => array(
+							'label' => __( 'Log Level', 'mg2_loader' ),
+							'type' => 'select',
+							'options' => array(
+								'LOG' => __( 'LOG', 'mg2_loader' ),
+								'INFO' => __( 'INFO', 'mg2_loader' ),
+								'WARN' => __( 'WARN', 'mg2_loader' ),
+								'DEBUG' => __( 'DEBUG', 'mg2_loader' ),
+								'FATAL' => __( 'FATAL', 'mg2_loader' ),
+							),
+						),
+						'silentmode' => array(
+							'label' => __( 'Silent Mode', 'mg2_loader' ),
+							'type' => 'boolean',
+							'options' => array(
+								'false' => __( 'False', 'mg2_loader' ),
+								'true' => __( 'True', 'mg2_loader' ),
+							),
+						),
+						'paywall' => array(
+							'label' => __( 'Paywall', 'mg2_loader' ),
+							'type' => 'select',
+							'options' => array(
+								'None' => __( 'None', 'mg2_loader' ),
+								'Connext' => __( 'Connext', 'mg2_loader' ),
+							),
+						),
+						'content' => array(
+							'label' => __( 'Content', 'mg2_loader' ),
+							'type' => 'group',
+							'fields' => array(
+								'title' => array(
+									'label' => __( 'Title', 'mg2_loader' ),
+								),
+								'category' => array(
+									'label' => __( 'Category', 'mg2_loader' ),
+								),
+							),
+						),
+						'siteId' => array(
+							'label' => __( 'Site ID', 'mg2_loader' ),
+							'type' => 'number',
+							'min' => 1,
+							'required' => true,
+						),
+						'siteCode' => array(
+							'label' => __( 'Site Code', 'mg2_loader' ),
+							'required' => true,
+						),
+						'cost' => array(
+							'label' => __( 'Cost', 'mg2_loader' ),
+							'type' => 'group',
+							'fields' => array(
+								'display' => array(
+									'label' => __( 'Display', 'mg2_loader' ),
+								),
+								'token' => array(
+									'label' => __( 'Token', 'mg2_loader' ),
+								),
+							),
+						),
+						'layouts' => array(
+							'label' => __( 'Layouts', 'mg2_loader' ),
+							'type' => 'group',
+							'fields' => array(
+								'notPurchased' => array(
+									'label' => __( 'Not Purchased', 'mg2_loader' ),
+									'type' => 'group',
+									'fields' => $fz_layout_fields,
+								),
+								'hasPurchased' => array(
+									'label' => __( 'Has Purchased', 'mg2_loader' ),
+									'type' => 'group',
+									'fields' => $fz_layout_fields,
+								),
+								'loggedOut' => array(
+									'label' => __( 'Logged Out', 'mg2_loader' ),
+									'type' => 'group',
+									'fields' => $fz_layout_fields,
+								),
+								'auth' => array(
+									'label' => __( 'Auth', 'mg2_loader' ),
+									'type' => 'group',
+									'fields' => $fz_layout_fields,
+								),
 							),
 						),
 					),
