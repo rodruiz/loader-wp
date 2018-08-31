@@ -29,7 +29,11 @@ function autoload( $cls ) {
 	$cls = array_pop( $dirs );
 
 	foreach ( [ 'class', 'trait' ] as $type ) {
-		$filename = PATH . rtrim( '/php/' . implode( '/', $dirs ), '/' ) . "/{$type}-{$cls}.php";
+		$filename = PATH . DIRECTORY_SEPARATOR . 'php'
+			. rtrim(
+				implode( DIRECTORY_SEPARATOR, $dirs ),
+				DIRECTORY_SEPARATOR
+			) . DIRECTORY_SEPARATOR . "{$type}-{$cls}.php";
 
 		if ( file_exists( $filename ) && 0 === validate_file( $filename ) ) {
 			require_once( $filename );

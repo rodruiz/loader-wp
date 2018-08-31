@@ -56,6 +56,6 @@ if ( ! defined( __NAMESPACE__ . '\ASSET_URI' ) ) {
 	define( __NAMESPACE__ . '\ASSET_URI', plugin_dir_url( __FILE__ ) . 'static/' );
 }
 
-require_once( PATH . '/php/autoload.php' );
+require_once( PATH . DIRECTORY_SEPARATOR . 'php' . DIRECTORY_SEPARATOR . 'autoload.php' );
 
 add_action( 'after_setup_theme', [ __NAMESPACE__ . '\Main', 'instance' ], 20 );

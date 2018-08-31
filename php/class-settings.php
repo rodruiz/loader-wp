@@ -300,6 +300,10 @@ class Settings {
 	 * @param string $value
 	 */
 	public function show_checkboxes( $field, $name, $value ) {
+		if ( ! is_array( $value ) ) {
+			$value = [];
+		}
+
 		foreach ( $field['options'] as $option => $label ) :
 		?>
 			<label style="<?php echo esc_attr( $field['style'] ); ?>"
