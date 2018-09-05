@@ -24,6 +24,9 @@ function autoload( $cls ) {
 		return;
 	}
 
+	// Outside of VIP, we need to allow drive letters because Windows hosting environments require it.
+	$valid_paths = defined( 'WPCOM_IS_VIP_ENV' ) && true === WPCOM_IS_VIP_ENV ? [ 0 ] : [ 0, 2 ];
+
 	$cls = strtolower( str_replace( [ __NAMESPACE__ . '\\', '_' ], [ '', '-' ], $cls ) );
 	$dirs = explode( '\\', $cls );
 	$cls = array_pop( $dirs );
@@ -35,7 +38,10 @@ function autoload( $cls ) {
 				DIRECTORY_SEPARATOR
 			) . DIRECTORY_SEPARATOR . "{$type}-{$cls}.php";
 
-		if ( file_exists( $filename ) && 0 === validate_file( $filename ) ) {
+		if (
+			file_exists( $filename )
+			&& in_array( validate_file( $filename ), $valid_paths, true )
+		) {
 			require_once( $filename );
 		}
 	}
