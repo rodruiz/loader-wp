@@ -251,7 +251,7 @@ window.MG2Loader = function ($) {
       id: plugin.name + '_CSS',
       rel: "stylesheet",
       type: "text/css",
-      href: href
+      href: encodeURI(href)
     });
   }
 
