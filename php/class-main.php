@@ -224,6 +224,11 @@ class Main {
 							'label' => __( 'Tag Manager', 'mg2_loader' ),
 							'required' => true,
 						),
+						'containerId' => array(
+							'label' => __( 'GTM container id', 'mg2_loader' ),
+							'description' => __( 'Google tag manager container id.' ),
+							'required' => true,
+						),
 						'collectors' => array(
 							'label' => __( 'Collectors', 'mg2_loader' ),
 							'description' => __( 'Comma-separated list of collectors.' ),

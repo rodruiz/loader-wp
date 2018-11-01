@@ -44,6 +44,7 @@ class Test_Main extends \WP_UnitTestCase {
 				'version' => '1.15',
 				'environment' => 'stage',
 				'collectors' => 'connext',
+				'containerId' => 'TEST_CID',
 				'tagManager' => 'GTM',
 			],
 		] );
@@ -78,6 +79,7 @@ class Test_Main extends \WP_UnitTestCase {
 		$this->assertSame( '1.15', $MG2['settings']['plugins'][2]['initOptions']['version'] );
 		$this->assertSame( 'stage', $MG2['settings']['plugins'][2]['initOptions']['environment'] );
 		$this->assertSame( 'GTM', $MG2['settings']['plugins'][2]['initOptions']['tagManager'] );
+		$this->assertSame( 'TEST_CID', $MG2['settings']['plugins'][2]['initOptions']['containerId'] );
 		$this->assertSame( ['connext'], $MG2['settings']['plugins'][2]['initOptions']['collectors'] );
 	}
 }
