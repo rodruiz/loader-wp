@@ -250,16 +250,14 @@ window.MG2Loader = function ($) {
     }
 
     function loadPluginCSS(plugin, href) {
-        var cssLink = $("<link>");
+        var cssLink = document.createElement("link");
 
-        $("head").append(cssLink);
+        cssLink.id = plugin.name + '_CSS';
+        cssLink.rel = "stylesheet";
+        cssLink.type = "text/css";
+        cssLink.href = href;
 
-        cssLink.attr({
-            id: plugin.name + '_CSS',
-            rel: "stylesheet",
-            type: "text/css",
-            href: encodeURI(href)
-        });
+        document.getElementsByTagName("head")[0].appendChild(cssLink);
     }
 
     function initPlugins() {
