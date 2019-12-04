@@ -319,9 +319,18 @@ class Main {
 			wp_localize_script( "{$this->name}_loader", 'MG2', $this->get_settings() );
 
 			$inline = $str = <<<'EOD'
+var MG2Loader = MG2Loader || {};
 (function( MG2, MG2Loader ) {
-	if ( 'undefined' !== typeof MG2 && 'undefined' !== typeof MG2Loader) {
+	if ( 'undefined' !== typeof MG2 && 'undefined' !== typeof MG2Loader && MG2Loader.init) {
 		MG2Loader.init( MG2.settings );
+	} else {
+		// wait for script to load in case "async" attribute is used.
+		var timerIdPoll = setInterval(function () {
+			if ( 'undefined' !== typeof window.MG2 && 'undefined' !== typeof window.MG2Loader && window.MG2Loader.init) {
+				clearInterval(timerIdPoll);
+				window.MG2Loader.init( window.MG2.settings );
+			}
+		}, 500);
 	}
 })( MG2, MG2Loader );
 EOD;
