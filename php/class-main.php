@@ -8,6 +8,20 @@ namespace MG2_Loader;
 class Main {
 
 	/**
+	 * appInsights keys for different environments
+	 * 
+	 * @access private
+	 */
+	private $appInsightsKeys;
+
+	/**
+	 * Template of url of loader config json file
+	 * 
+	 * @access private
+	 */
+	private $configUrlTemplate;
+
+	/**
 	 * Name used internally to identify this plugin.
 	 *
 	 * @access protected
@@ -48,7 +62,14 @@ class Main {
 	 *
 	 * @access protected
 	 */
-	protected function __construct() {}
+	protected function __construct() {
+		$this->appInsightsKeys = (array) [
+			'stage' => '13f32af2-08e3-4579-8fcf-ff76d2477913',
+			'prod' => '8241cbc2-50a5-47c4-b91f-462506490fad'
+		];
+
+		$this->configUrlTemplate = 'https://loader-cdn.azureedge.net/__ENVIRONMENT__/__VERSION__/loader-config.json';
+	}
 
 	/**
 	 * Initialize properties and register hooks.
@@ -123,10 +144,6 @@ class Main {
 								'false' => __( 'False', 'mg2_loader' ),
 								'true' => __( 'True', 'mg2_loader' ),
 							),
-						),
-						'version' => array(
-							'label' => __( 'Version', 'mg2_loader' ),
-							'required' => true,
 						),
 						'environment' => array(
 							'label' => __( 'Environment', 'mg2_loader' ),
@@ -258,6 +275,16 @@ class Main {
 
 		$output['settings'] = $input['loader'];
 		$output['settings']['plugins'] = array();
+
+		$environment = $output['settings']['environment'];
+		$version = $output['settings']['version'];
+
+		$output['settings']['CONFIG_URL'] = str_replace('__ENVIRONMENT__', $environment, str_replace('__VERSION__', $version, $this->configUrlTemplate));
+
+		if(empty($output['settings']['appInsightsKey'])) {
+			$appInsightsKey = empty($this->appInsightsKeys[$environment]) == false ? $this->appInsightsKeys[$environment] : $this->appInsightsKeys['prod'];
+			$output['settings']['appInsightsKey'] = $appInsightsKey;
+		}
 
 		foreach( $input['loader']['plugins'] as $plugin ) {
 			$data = array(

@@ -29,7 +29,6 @@ class Test_Main extends \WP_UnitTestCase {
 			],
 			'NXT' => [
 				'required' => true,
-				'version' => 'TEST_V',
 				'environment' => 'stage',
 				'clientCode' => 'TEST_C',
 				'siteCode' => 'TEST_SITE',
@@ -64,7 +63,6 @@ class Test_Main extends \WP_UnitTestCase {
 
 		$this->assertSame( 'NXT', $MG2['settings']['plugins'][1]['name'] );
 		$this->assertTrue( $MG2['settings']['plugins'][1]['required'] );
-		$this->assertSame( 'TEST_V', $MG2['settings']['plugins'][1]['initOptions']['version'] );
 		$this->assertSame( 'stage', $MG2['settings']['plugins'][1]['initOptions']['environment'] );
 		$this->assertSame( 'TEST_C', $MG2['settings']['plugins'][1]['initOptions']['clientCode'] );
 		$this->assertSame( 'TEST_SITE', $MG2['settings']['plugins'][1]['initOptions']['siteCode'] );

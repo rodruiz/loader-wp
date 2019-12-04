@@ -17,7 +17,6 @@ Plugin settings section:
 * Connext (associated plugin name is “NXT”)
 	* required: Dropdown with the following values: true, false. Default value is false.
 	* initOptions: section that contains plugin’s initialization options:
-		* version: Text input. Required.
 		* environment: Dropdown with the following options: “stage”, “prod”. Not required. Default value is “prod”.
 		* siteCode: Text input. Required.
 		* configCode: Text input. Required.
@@ -84,7 +83,6 @@ MG2Loader.init({
 			name: 'NXT',
 			required: true
 			initOptions: {
-				version: 'MNG',
 				environment: 'prod',
 				clientCode: 'MNG',
 				siteCode: 'MNG',

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: MG2 Loader for WordPress
- * Version: 1.0
- * Author: Alley Interactive
+ * Version: 1.0.6
+ * Author: Naviga Global
  * Description: Allows configuration and use of the MG2 loader for WordPress sites.
  */
 /*  This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 namespace MG2_Loader;
 
-define( __NAMESPACE__ . '\VERSION', '1.0.0' );
+define( __NAMESPACE__ . '\VERSION', '1.0.6' );
 
 define( __NAMESPACE__ . '\PATH', __DIR__ );
 

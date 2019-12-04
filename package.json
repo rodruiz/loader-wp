@@ -1,6 +1,6 @@
 {
   "name": "mg2-loader-wp",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "Allows configuration and use of the MG2 loader for WordPress sites.",
   "private": true,
   "directories": {
@@ -17,9 +17,10 @@
   },
   "keywords": [
     "MG2",
-    "Connext"
+    "Connext",
+    "Engage"
   ],
-  "author": "Alley Interactive",
+  "author": "Alley Naviga Global",
   "bugs": {
     "url": "https://github.com/marketingg2/loader-wp/issues"
   },

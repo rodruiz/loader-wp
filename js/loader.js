@@ -1,14 +1,66 @@
 /*
-* Version: 1.0
-* Build: 20180730.3
-*/
-import jQuery from 'jQuery';
+* Version: 1.0.6 
+* Build: 20191204.1 
+*/ 
 
-window.loaderVersion = "1.0";
+ window.loaderVersion = "1.0.6";
 
-window.loaderBuild = "20180730.3";
+ window.loaderBuild = "20191204.1";function PluginInitOverride(overrides, plugin, siteCode, layoutCode){
+    this.plugin = plugin;
+    this.overrides = overrides;
+    this.siteCode = siteCode;
+    this.layoutCode = layoutCode;
+}
 
-window.MG2Loader = function ($) {
+
+PluginInitOverride.prototype.findCurrentPlugin = function (overrideTypeInits) {
+    var pluginOptions = null;
+    if (overrideTypeInits && overrideTypeInits.plugins) {
+        var pluginsLength = overrideTypeInits.plugins.length;
+        for (var i = 0; i < pluginsLength; i++) {
+            pluginSettings = overrideTypeInits.plugins[i];
+            if (pluginSettings.name == this.plugin.name) {
+                return pluginSettings.initOptions;
+            }
+        }
+    }
+
+    return pluginOptions;
+}
+
+
+PluginInitOverride.prototype.getTypeInits = function (overrideTypeInits, property, propertyValue) {
+    var overrideInits = {};
+    if(overrideTypeInits){
+        if(overrideTypeInits[property] && overrideTypeInits[property][propertyValue]){
+            var overridePluginInits = this.findCurrentPlugin(overrideTypeInits[property][propertyValue]);
+            if(overridePluginInits){
+                $.extend(true,  overrideInits, overridePluginInits);
+            }
+        }
+    }
+
+    return overrideInits;
+}
+
+
+
+PluginInitOverride.prototype.getCustomInits = function(){
+    var overrideInits = {};
+    var that = this;
+    this.overrides.forEach(function(overrideTypeInits) {
+        var siteCodeInits = that.getTypeInits(overrideTypeInits, 'siteCodes', that.siteCode);
+        var layoutInits = that.getTypeInits(overrideTypeInits, 'customLayouts', that.layoutCode);
+
+        $.extend(true,  overrideInits, siteCodeInits, layoutInits);
+
+    });
+
+    return overrideInits;
+}
+
+
+var MG2Loader = function ($) {
     var allowedCharacters = "0123456789ABCDEFGHIJKLMNOPQabcdefghijklmnopqrstuvwxyz",
         Fingerprinting = 0,
         DataLayer = 1,
@@ -22,33 +74,33 @@ window.MG2Loader = function ($) {
         ConfigFileNotFound: 'ConfigFileNotFound',
         JsValidationError: "JsValidationError"
     }
-
+    var SessionId= null;
     var DEFAULT_OPTIONS = {
         defaultResourceURLs: {
             FP: 'https://fp-cdn.azureedge.net/',
             DL: 'https://g2insights-cdn.azureedge.net/',
-            NXT: 'https://cdn.ayc0zsm69431gfebd.xyz/',
+            NXT: 'https://cdn.czx5eyk0exbhwp43ya.biz/',
             FZ: 'https://flittz-cdn.azureedge.net/'
         },
         fileNames: {
             FP: 'fp',
-            DL: 'mg2-data-extension',
+            DL: 'g2insights',
             NXT: 't8y9347t',
             FZ: 'Flittz',
         },
         blockAttempts: 2,
-        environment: 'prod',
-        appInsightsKey: null,
+        environment: '__ENVIRONMENT__',
+        appInsightsKey: '__APP_INSIGHTS_KEY__',
         globalNames: {
-            FZ: String.fromCharCode.apply(null, [70, 108, 105, 116, 116, 122]),
-            NXT: String.fromCharCode.apply(null, [67, 111, 110, 110, 101, 120, 116]),
-            FP: String.fromCharCode.apply(null, [70, 105, 110, 103, 101, 114, 112, 114, 105, 110, 116]),
-            DL: String.fromCharCode.apply(null, [77, 71, 50, 73, 110, 115, 105, 103, 104, 116, 115])
+            FZ: String.fromCharCode.apply(null, [70, 108, 105, 116, 116, 122]), // Flittz
+            NXT: String.fromCharCode.apply(null, [67, 111, 110, 110, 101, 120, 116]), // Connext
+            FP: String.fromCharCode.apply(null, [70, 105, 110, 103, 101, 114, 112, 114, 105, 110, 116]), // Fingerprint
+            DL: String.fromCharCode.apply(null, [77, 71, 50, 73, 110, 115, 105, 103, 104, 116, 115]) // MG2Insights
         }
     },
         OPTIONS = {},
         AVAILABLE_PLUGINS = ['FP', 'DL', 'NXT', 'FZ'],
-        CONFIG_URL = 'https://loader-cdn.azureedge.net/__ENVIRONMENT__/__CLIENT_CODE__/loader-config.json',
+        CONFIG_URL = '__JSON_URL__',
         ENVIRONMENTS = {
             localhost: 'localhost',
             dev: 'dev',
@@ -58,12 +110,6 @@ window.MG2Loader = function ($) {
             stage: 'stage',
             preprod: 'preprod',
             prod: 'prod'
-        },
-        APPINSHIGSKEYS = {
-            demo: '96000fb4-875d-4856-b663-a08d1b241b20',
-            prod: '8241cbc2-50a5-47c4-b91f-462506490fad',
-            stage: '13f32af2-08e3-4579-8fcf-ff76d2477913',
-            preprod: '7ca2e09a-3797-4a5b-9d7e-40a2e44d6efc'
         },
         MODES = {
             default: 1,
@@ -79,46 +125,81 @@ window.MG2Loader = function ($) {
         encodeType3,
         encodeType4,
         encodeType5
-    ];
+    ],
+    SITE_CODE,
+    LAYOUT_CODE;
 
+    function getPropertyValueFromClientInits(clientInitPlugins, property) {
+        var pluginsLength = clientInitPlugins.length;
+        for(var i=0; i< pluginsLength; i++){
+            var pluginInits = clientInitPlugins[i].initOptions;
+            if(pluginInits){
+                if (pluginInits.hasOwnProperty(property)) {
+                    return pluginInits[property];
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    //main function
     function init(options) {
+        //main validation
         if (!options || !options.plugins || !options.plugins.length) {
             throw { name: 'nxtError', message: 'Plugins are required for loader. Please, specify at least one plugin for downloading. ' };
         }
 
+        //if appInsightsKey passed as init param
         if (options.appInsightsKey) {
             initAppInsights(options.appInsightsKey);
         }
+        SessionId = GenerateGuid();
+        return loadPolifills().then(function(){
+        //getting loader file
 
-        return getLoaderConfig(options).then(function (config) {
-            OPTIONS = $.extend(true, OPTIONS, DEFAULT_OPTIONS, clearOptions(config), clearOptions(options));
+            return getLoaderConfig(options.CONFIG_URL).then(function (config) {     //WP case: ConfigUrl passed as init param from wrapper
+                LoaderConfig = config;
+               
+                var defaultOptions = $.extend(true, OPTIONS, DEFAULT_OPTIONS, clearOptions(config), clearOptions(options));
+                defaultOptions.plugins = extendCustomPluginSetting(options.plugins,  config.plugins);
 
-            if (!APP_INSIGHTS) {
-                initAppInsights();
-            }
+                SITE_CODE = getPropertyValueFromClientInits(defaultOptions.plugins,'siteCode');
+                LAYOUT_CODE = getPropertyValueFromClientInits(defaultOptions.plugins, 'layoutCode') || SITE_CODE;
 
-            prepareOptions(OPTIONS);
-
-            LOADER_STORAGE = new LoaderStorage();
-
-            LOADER_STORAGE.checkUpdates(OPTIONS.xCode);
-
-            return loadPlugins(OPTIONS.plugins).then(initPlugins);
-        });
+                OPTIONS = defaultOptions;
+    
+                //todo we need to have different APPINSIGHTS instanse for LOADER
+                if (!APP_INSIGHTS) {
+                    initAppInsights();
+                }
+               
+                prepareOptions(OPTIONS);
+    
+                LOADER_STORAGE = new LoaderStorage();
+    
+                LOADER_STORAGE.checkUpdates(OPTIONS.xCode);
+    
+                return loadPlugins(OPTIONS.plugins).then(initPlugins);
+            });
+        })
+   
     }
 
-    function getLoaderConfig(options) {
-        let url = CONFIG_URL.replace('__ENVIRONMENT__', options.environment).replace('__CLIENT_CODE__', options.version);
+    function getLoaderConfig(configUrl) {
+        var url = configUrl || CONFIG_URL;
         return $.ajax({
             url: url,
-            cache: true,
+            cache: false,
             ifModified: true,
             crossOrigin: true,
         }).then(function (config) {
             return $.when(config);
         }, function () {
+            //APP_INSIGHTS hasn't been initialized yet
             if (!APP_INSIGHTS) {
-                initAppInsights(DEFAULT_OPTIONS.appInsightsKey, options);
+                initAppInsights(DEFAULT_OPTIONS.appInsightsKey);
             }
             APP_INSIGHTS && APP_INSIGHTS.trackEvent(EVENTS.ConfigFileNotFound, {
                 configUrl: url
@@ -127,19 +208,58 @@ window.MG2Loader = function ($) {
         });
     }
 
+    function findPluginKeyByName(plugins, name){
+        var pluginKey;
+        plugins.forEach(function (pluginSettings, key) {
+            if(pluginSettings.name == name){
+                pluginKey = key;
+                return false;
+            }
+        });
+        return pluginKey;
+    }
+
+    function extendCustomPluginSetting(defaultInitPluginsOptions, customInitPluginsOptions){
+        if(customInitPluginsOptions) {
+            customInitPluginsOptions.forEach(function (pluginSettings) {
+                var pluginKey = findPluginKeyByName(defaultInitPluginsOptions, pluginSettings.name);
+                $.extend(true,  defaultInitPluginsOptions[pluginKey].initOptions, pluginSettings.initOptions);
+            });
+        }
+
+        return defaultInitPluginsOptions;
+    }
+
+    function isDefinedEnvironment(pluginSettings){
+       return pluginSettings && pluginSettings.initOptions && pluginSettings.initOptions.environment;
+    }
+
     function prepareOptions(options) {
         var preparedPlugins = [];
         options.plugin = {};
-
         options.plugins.forEach(function (pluginSettings) {
+            pluginSettings.initOptions.sessionId = SessionId;
+            pluginSettings.initOptions.siteCode = pluginSettings.initOptions.siteCode || SITE_CODE;
+            pluginSettings.initOptions.layoutCode = pluginSettings.initOptions.layoutCode || LAYOUT_CODE;
+            
+            if(!isDefinedEnvironment(pluginSettings)){
+                pluginSettings.initOptions['environment'] = OPTIONS.environment; 
+            }
             var plugin = new Plugin(pluginSettings);
+
+           
+            //todo #1 this code trows errors when potions is not valid. I think we need to catch those errors and continiue validate other plugin. Current implementation will stop any work after any error!
+            //todo #2 we need to track event in analytic when we have invalid data
+            //todo #3 there is no validation for all plugins except Connext. We need to add it for DataLayer and Flittz. 
 
             try {
                 plugin.validate();
                 preparedPlugins.push(plugin);
                 options.plugin[plugin.name] = plugin;
+
             }
             catch (ex) {
+                //validation error of plugin, we will not load that plugin, but will load all other plugins
                 APP_INSIGHTS && APP_INSIGHTS.trackEvent(EVENTS.ResourceValidationError, {
                     plugin: plugin.name,
                     attempt: plugin.usedLoadAttempts
@@ -154,6 +274,13 @@ window.MG2Loader = function ($) {
         var pluginsQueue = [];
 
         plugins.forEach(function (plugin) {
+            if(LoaderConfig.overrides && LoaderConfig.overrides.length>0){
+                var overrideInits = new PluginInitOverride(LoaderConfig.overrides, plugin, SITE_CODE, LAYOUT_CODE);
+                var pluginCustomInits = overrideInits.getCustomInits();
+            
+                $.extend(true,  plugin.initOptions, pluginCustomInits);   
+            }
+
             var source = plugin.getSource();
             pluginsQueue.push(loadPluginResources(plugin, source));
         });
@@ -250,14 +377,16 @@ window.MG2Loader = function ($) {
     }
 
     function loadPluginCSS(plugin, href) {
-        var cssLink = document.createElement("link");
+        var cssLink = $("<link>");
 
-        cssLink.id = plugin.name + '_CSS';
-        cssLink.rel = "stylesheet";
-        cssLink.type = "text/css";
-        cssLink.href = href;
+        $("head").append(cssLink);
 
-        document.getElementsByTagName("head")[0].appendChild(cssLink);
+        cssLink.attr({
+            id: plugin.name + '_CSS',
+            rel: "stylesheet",
+            type: "text/css",
+            href: href
+        });
     }
 
     function initPlugins() {
@@ -269,6 +398,9 @@ window.MG2Loader = function ($) {
             }
         });
     }
+
+
+    // --- LOADER OBJECTS ---
 
     function Plugin(settings) {
         this.name = (typeof settings.name === 'string') ? settings.name.toUpperCase() : '';
@@ -312,11 +444,12 @@ window.MG2Loader = function ($) {
 
         var environmentSegment = (this.mode === MODES.dynamic && !resourceUrl.isDefault) ? encodeType1(this.environment) : this.environment;
         var versionSegment = (this.mode === MODES.dynamic && !resourceUrl.isDefault) ? encodeType1(this.version) : this.version;
+        var xCode = (this.initOptions && this.initOptions.xCode) ? this.initOptions.xCode: "";
 
         var source = {
             resourceUrl: resourceUrl,
-            js: resourceUrl.path + environmentSegment + '/' + versionSegment + '/' + this.fileName + minifiedPostfix + '.js',
-            css: resourceUrl.path + environmentSegment + '/' + versionSegment + '/' + this.fileName + minifiedPostfix + '.css',
+            js: resourceUrl.path + environmentSegment + '/' + versionSegment + '/' + this.fileName + minifiedPostfix + '.js?' + xCode,
+            css: resourceUrl.path + environmentSegment + '/' + versionSegment + '/' + this.fileName + minifiedPostfix + '.css?'+ xCode,
             environmentSegment: environmentSegment,
             versionSegment: versionSegment
         };
@@ -347,7 +480,8 @@ window.MG2Loader = function ($) {
     }
 
     Plugin.prototype.getMode = function () {
-        if (OPTIONS.predefinedResourceURLs && Array.isArray(OPTIONS.predefinedResourceURLs[this.name]) && OPTIONS.predefinedResourceURLs[this.name].length > 0) {
+        var predefinedUrls = OPTIONS.predefinedResourceURLs ? OPTIONS.predefinedResourceURLs[this.name]: null;
+        if (predefinedUrls && Array.isArray(predefinedUrls) && predefinedUrls.length > 0) {
             return MODES.predefined;
         }
 
@@ -389,6 +523,7 @@ window.MG2Loader = function ($) {
     }
 
     Plugin.prototype.validateURLs = function () {
+        // remove invalid URLs
         this.resourceURLs = this.resourceURLs.filter(function (url) {
             return isValidURL(url);
         });
@@ -518,9 +653,9 @@ window.MG2Loader = function ($) {
         var blockedResources = LOADER_STORAGE.getStoredData().bRs[this.name];
 
         for (var i = 0; i < this.resourceURLs.length; i++) {
-            var blockCount = blockedResources[indexToChar(i)];
+            var blockCount = blockedResources ? blockedResources[indexToChar(i)] : null;
 
-            if (blockCount !== OPTIONS.blockAttempts) {
+            if (!blockCount || blockCount !== OPTIONS.blockAttempts) {
                 hasUnblockedUrls = true;
                 break;
             }
@@ -627,9 +762,12 @@ window.MG2Loader = function ($) {
         return urlIsBlocked;
     }
 
-    function initAppInsights(key, options) {
+
+    // --- APP INSIGHTS ---
+
+    function initAppInsights(key) {
         if (!key && (!OPTIONS || !OPTIONS.appInsightsKey)) {
-            APP_INSIGHTS = APPINSHIGSKEYS[options.environment];
+            APP_INSIGHTS = null;
             return;
         }
         try {
@@ -674,7 +812,8 @@ window.MG2Loader = function ($) {
             }({
                 instrumentationKey: key || OPTIONS.appInsightsKey,
                 disableExceptionTracking: true,
-                disableAjaxTracking: true
+                disableAjaxTracking: true,
+                maxAjaxCallsPerView: 0
             });
 
             window.appInsights = APP_INSIGHTS;
@@ -682,6 +821,9 @@ window.MG2Loader = function ($) {
             APP_INSIGHTS = null;
         }
     }
+
+
+    // --- URL GENERATORS ---
 
     function encodeType1(code) {
         return btoa(code).replace(/[^a-z0-9]/gi, '');
@@ -764,6 +906,9 @@ window.MG2Loader = function ($) {
         return result;
     }
 
+
+    // --- UTILS ---
+
     function clearOptions(options) {
         if (!options.appInsightsKey) {
             delete options.appInsightsKey;
@@ -844,6 +989,40 @@ window.MG2Loader = function ($) {
     function getVersionInfo() {
         return "Version: " + window.loaderVersion + ", Build: " + window.loaderBuild;
     }
+
+    function loadPolifills(){
+        deferredResources = $.Deferred();
+
+        var ajaxSettings = {
+            url: "https://polyfill.io/v3/polyfill.min.js?flags=gated&features=es5%2CCustomEvent%2CArray.from%2CArray.isArray%2CArray.prototype.filter%2CArray.prototype.find%2CArray.prototype.findIndex%2CArray.prototype.forEach%2CArray.prototype.indexOf%2CArray.prototype.keys%2CArray.prototype.lastIndexOf%2CArray.prototype.map%2CArray.prototype.reduce%2CDate.prototype.toISOString%2CDocumentFragment%2CDocumentFragment.prototype.append%2CDocumentFragment.prototype.prepend%2CElement%2CElement.prototype.after%2CElement.prototype.append%2CElement.prototype.before%2CElement.prototype.classList%2CElement.prototype.cloneNode%2CElement.prototype.closest%2CElement.prototype.dataset%2CElement.prototype.matches%2CElement.prototype.placeholder%2CElement.prototype.prepend%2CElement.prototype.remove%2CElement.prototype.replaceWith%2CElement.prototype.toggleAttribute%2CEvent%2CJSON%2CMap%2CNumber.parseInt%2CNumber.parseFloat%2CObject.assign%2CObject.create%2CObject.defineProperties%2CObject.defineProperty%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getOwnPropertyNames%2CObject.is%2CObject.keys%2CObject.values%2CPromise%2CPromise.prototype.finally%2CSet%2CString.prototype.trim%2CXMLHttpRequest%2Cdocument.getElementsByClassName%2Cdocument.currentScript%2Cdocument.querySelector%2Cfetch%2CgetComputedStyle%2ClocalStorage%2CArray.prototype.some%2CDate.now%2CEvent.focusin%2CEventSource%2CFunction.prototype.bind%2CFunction.prototype.name%2CHTMLDocument%2CNodeList.prototype.forEach%2CNodeList.prototype.%40%40iterator%2CNode.prototype.contains%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CRegExp.prototype.flags%2CString.prototype.%40%40iterator%2CString.prototype.startsWith%2Cconsole%2Cconsole.debug%2Cconsole.error%2Cconsole.info%2Cconsole.log%2Cdocument%2Cdocument.head%2Cdocument.visibilityState%2Clocation.origin%2CrequestIdleCallback%2Cscreen.orientation%2CmatchMedia%2CURL",
+            crossOrigin: true,
+            dataType: 'script',
+            cache: true,
+            ifModified: true,
+            async: false,
+            success: function () {
+                 deferredResources.resolve();
+            },
+            error: function (responce) {
+                deferredResources.resolve();
+            }
+        }
+
+        $.ajax(ajaxSettings);
+        return deferredResources.promise();
+
+    }
+
+    function GenerateGuid() {
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+        return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
+    }
+
+    // --- PUBLIC ---
 
     return {
         init: init,
